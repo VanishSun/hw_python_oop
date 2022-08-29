@@ -1,3 +1,4 @@
+from __future__ import annotations
 from dataclasses import dataclass
 
 
@@ -23,18 +24,15 @@ class InfoMessage:
 
 class Training:
     """Базовый класс тренировки."""
-    LEN_STEP: float = 0.65
-    """Длинна одного шага."""
-    M_IN_KM: int = 1000
-    """Перевод км в метры."""
-    HOURS_TO_MIN = 60
-    """Перевод часов в минуты."""
+    LEN_STEP: float = 0.65       # Длинна одного шага.
+    M_IN_KM: int = 1000          # Перевод км в метры.
+    HOURS_TO_MIN = 60            # Перевод часов в минуты.
 
     def __init__(
-            self,
-            action: int,
-            duration: float,
-            weight: float
+        self,
+        action: int,
+        duration: float,
+        weight: float
     ) -> None:
         self.action = action
         self.duration = duration
@@ -65,9 +63,8 @@ class Training:
 
 class Running(Training):
     """Тренировка: бег."""
-    COEFF_CALORIE_RUN_1 = 18
+    COEFF_CALORIE_RUN_1 = 18     # Два коэффициента для расчета каллорий бега.
     COEFF_CALORIE_RUN_2 = 20
-    """Два коэффициента для расчета каллорий бега."""
 
     def get_spent_calories(self) -> float:
         """Получить количество затраченных калорий."""
@@ -81,47 +78,42 @@ class Running(Training):
 
 class SportsWalking(Training):
     """Тренировка: спортивная ходьба."""
-    COEFF_CALORIE_WLK_1 = 0.035
-    COEFF_CALORIE_WLK_2 = 0.029
-    """Два коэффициента для расчета каллорий спортивной ходьбы."""
+    COEFF_CALORIE_WLK_1 = 0.035     # Два коэффициента для расчета
+    COEFF_CALORIE_WLK_2 = 0.029     # каллорий спортивной ходьбы.
 
     def __init__(
-            self,
-            action: int,
-            duration: float,
-            weight: float,
-            height: float
+        self,
+        action: int,
+        duration: float,
+        weight: float,
+        height: float
     ) -> None:
         super().__init__(action, duration, weight)
         self.height = height
 
     def get_spent_calories(self) -> float:
         """Получить количество затраченных калорий."""
-
-        hours_to_min = 60
         return (
             (self.COEFF_CALORIE_WLK_1 * self.weight
              + (self.get_mean_speed() ** 2 // self.height)
              * self.COEFF_CALORIE_WLK_2 * self.weight) * self.duration
-            * hours_to_min
+            * self.HOURS_TO_MIN
         )
 
 
 class Swimming(Training):
     """Тренировка: плавание."""
-    LEN_STEP = 1.38
-    """Длинна одного гребка."""
-    COEFF_CALORIE_SWM_1 = 1.1
-    COEFF_CALORIE_SWM_2 = 2
-    """Два коэффициента для расчета каллорий плавания."""
+    LEN_STEP = 1.38             # Длинна одного гребка.
+    COEFF_CALORIE_SWM_1 = 1.1   # Два коэффициента для расчета
+    COEFF_CALORIE_SWM_2 = 2     # каллорий плавания.
 
     def __init__(
-            self,
-            action: int,
-            duration: float,
-            weight: float,
-            length_pool: int,
-            count_pool: int
+        self,
+        action: int,
+        duration: float,
+        weight: float,
+        length_pool: int,
+        count_pool: int
     ) -> None:
         super().__init__(action, duration, weight)
         self.length_pool = length_pool
@@ -144,19 +136,28 @@ class Swimming(Training):
 
 def read_package(workout_type: str, data: list) -> Training:
     """Прочитать данные полученные от датчиков."""
-    Trainings = {
+    trainings: dict[str, object] = {
         'SWM': Swimming,
         'RUN': Running,
         'WLK': SportsWalking
     }
-    return Trainings[workout_type](*data)
+    try:
+        return trainings[workout_type](*data)
+    except KeyError:
+        print(
+            f'KeyError: Тип тренировки {workout_type} '
+            f'не может быть обработан.'
+        )
 
 
 def main(training: Training) -> None:
     """Главная функция."""
-    info = training.show_training_info()
-    result: str = info.get_message()
-    print(result)
+    try:
+        info = training.show_training_info()
+        result: str = info.get_message()
+        print(result)
+    except AttributeError:
+        return
 
 
 if __name__ == '__main__':
