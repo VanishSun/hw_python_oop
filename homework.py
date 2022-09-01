@@ -1,4 +1,4 @@
-from __future__ import annotations
+from typing import Dict, Type
 from dataclasses import dataclass
 
 
@@ -70,8 +70,10 @@ class Running(Training):
         """Получить количество затраченных калорий."""
 
         return (
-            (self.COEFF_CALORIE_RUN_1 * self.get_mean_speed()
-             - self.COEFF_CALORIE_RUN_2) * self.weight / self.M_IN_KM
+            (
+                self.COEFF_CALORIE_RUN_1 * self.get_mean_speed()
+                - self.COEFF_CALORIE_RUN_2
+            ) * self.weight / self.M_IN_KM
             * self.duration * self.HOURS_TO_MIN
         )
 
@@ -94,10 +96,11 @@ class SportsWalking(Training):
     def get_spent_calories(self) -> float:
         """Получить количество затраченных калорий."""
         return (
-            (self.COEFF_CALORIE_WLK_1 * self.weight
-             + (self.get_mean_speed() ** 2 // self.height)
-             * self.COEFF_CALORIE_WLK_2 * self.weight) * self.duration
-            * self.HOURS_TO_MIN
+            (
+                self.COEFF_CALORIE_WLK_1 * self.weight
+                + (self.get_mean_speed() ** 2 // self.height)
+                * self.COEFF_CALORIE_WLK_2 * self.weight
+            ) * self.duration * self.HOURS_TO_MIN
         )
 
 
@@ -129,35 +132,33 @@ class Swimming(Training):
     def get_spent_calories(self) -> float:
         """Получить количество затраченных калорий."""
         return (
-            (self.get_mean_speed() + self.COEFF_CALORIE_SWM_1)
+            (
+                self.get_mean_speed() + self.COEFF_CALORIE_SWM_1
+            )
             * self.COEFF_CALORIE_SWM_2 * self.weight
         )
 
 
 def read_package(workout_type: str, data: list) -> Training:
     """Прочитать данные полученные от датчиков."""
-    trainings: dict[str, object] = {
+    trainings: Dict[str, Type[Training]] = {
         'SWM': Swimming,
         'RUN': Running,
         'WLK': SportsWalking
     }
-    try:
+    if workout_type in trainings:
         return trainings[workout_type](*data)
-    except KeyError:
-        print(
-            f'KeyError: Тип тренировки {workout_type} '
-            f'не может быть обработан.'
-        )
+    raise ValueError(
+        f'ValueError: Тип тренировки {workout_type} '
+        f'не может быть обработан.'
+    )
 
 
 def main(training: Training) -> None:
     """Главная функция."""
-    try:
-        info = training.show_training_info()
-        result: str = info.get_message()
-        print(result)
-    except AttributeError:
-        return
+    info = training.show_training_info()
+    result: str = info.get_message()
+    print(result)
 
 
 if __name__ == '__main__':
